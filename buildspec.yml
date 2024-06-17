@@ -25,7 +25,7 @@ phases:
       - echo Writing image definitions file..
       - printf '[{"name":"%s","imageUri":"%s"}]' $DOCKER_CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
       - cat imagedefinitions.json
-  artifacts:
-    files:
-      - imagedefinitions.json
-      - target/eureka-server-0.0.1-SNAPSHOT.jar
+artifacts:
+  files:
+    - imagedefinitions.json
+    - target/eureka-server-0.0.1-SNAPSHOT.jar
