@@ -7,24 +7,23 @@ phases:
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 677253534368.dkr.ecr.us-east-1.amazonaws.com
       - REPOSITORY_URI=677253534368.dkr.ecr.us-east-1.amazonaws.com/eureka-server
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
   build:
     commands:
       - echo Build comecando na data `date`
       - echo building jar file
       - mvn clean install
       - echo building dockerfile
-      - docker build -t $REPOSITORY_URI:$BUILD_TAG .
-      - docker tag $REPOSITORY_URI:$BUILD_TAG $REPOSITORY_URI:$IMAGE_TAG
+      - docker build -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
   post_build:
     commands:
-      - echo build complete on `date`
-      - echo Push no docker
-      - docker push $REPOSITORY_URI:$BUILD_TAG
+      - echo Build finalizado com sucesso em `date`
+      - echo Fazendo push da imagem para o ECR...
+      - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo Writing image definitions file..
-      - printf '[{"name":"%s","imageUri":"%s"}]' $DOCKER_CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
-      - cat imagedefinitions.json
+      - echo Gerando artefato da imagem para o ECS
+      - printf '[{"name":"bia","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 artifacts:
   files:
     - imagedefinitions.json
